@@ -8,12 +8,11 @@ import skimage.color as skic
 import skimage.filters as skif
 from skimage import io
 from math import atan2, pi
+import math
 
 
 def median_filter(image):
     img_median = median(image, disk(3), mode='constant', cval=0.0)
-    cv2.imwrite('test.jpg', img_median)
-
     return img_median
 
 
@@ -46,7 +45,7 @@ def non_max_suppression(gradient_magnitude, gradient_direction, verbose):
  
     output = np.zeros(gradient_magnitude.shape)
  
-    PI = 180
+    PI = math.pi
     
     for row in range(1, image_row - 1):
         for col in range(1, image_col - 1):
@@ -80,14 +79,17 @@ def show(img):
     ax.set_axis_off()
     plt.show()
 
-
-if __name__== "__main__":
-    file_path = "salt and pepper noise.png"
-    image = cv2.imread(file_path, 0)
+def canny_edge(image):
     img = median_filter(image)
     img = sobel(img)
-    show(img)
     magnitude, direction = polar(gradient(img))
     img = non_max_suppression(magnitude, direction, "verbose")
+    return img
+
+
+if __name__== "__main__":
+    file_path = "TESTPIC.jpg"
+    image = cv2.imread(file_path, 0)
+    new_image = canny_edge(image)
     show(image)
-    show(img)
+    show(new_image)
