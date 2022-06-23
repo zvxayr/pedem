@@ -7,21 +7,13 @@ from skimage.morphology import disk
 import skimage.color as skic
 import skimage.filters as skif
 from skimage import io
-from math import atan2, pi
+from math import atan2, pi, tau
 import math
 
 
 def median_filter(image):
     img_median = median(image, disk(3), mode='constant', cval=0.0)
     return img_median
-
-
-def sobel(img):
-    sobhimg = skif.sobel_h(img)
-    sobvimg = skif.sobel_v(img)
-    sobimg = (sobhimg ** 2 + sobvimg ** 2) ** (1/2)
-
-    return sobimg
 
 
 def gradient(img):
@@ -38,40 +30,34 @@ def polar(vector):
 
     return magnitude, direction
 
-
-def non_max_suppression(gradient_magnitude, gradient_direction, verbose):
- 
+def non_max_suppression(gradient_magnitude, gradient_direction):
     image_row, image_col = gradient_magnitude.shape
- 
     output = np.zeros(gradient_magnitude.shape)
- 
-    PI = math.pi
-    
-    for row in range(1, image_row - 1):
-        for col in range(1, image_col - 1):
-            direction = gradient_direction[row, col]
-    
-            if (0 <= direction < PI / 8) or (15 * PI / 8 <= direction <= 2 * PI):
-                before_pixel = gradient_magnitude[row, col - 1]
-                after_pixel = gradient_magnitude[row, col + 1]
-    
-            elif (PI / 8 <= direction < 3 * PI / 8) or (9 * PI / 8 <= direction < 11 * PI / 8):
-                before_pixel = gradient_magnitude[row + 1, col - 1]
-                after_pixel = gradient_magnitude[row - 1, col + 1]
-    
-            elif (3 * PI / 8 <= direction < 5 * PI / 8) or (11 * PI / 8 <= direction < 13 * PI / 8):
-                before_pixel = gradient_magnitude[row - 1, col]
-                after_pixel = gradient_magnitude[row + 1, col]
-    
-            else:
-                before_pixel = gradient_magnitude[row - 1, col - 1]
-                after_pixel = gradient_magnitude[row + 1, col + 1]
-    
-            if gradient_magnitude[row, col] >= before_pixel and gradient_magnitude[row, col] >= after_pixel:
-                output[row, col] = gradient_magnitude[row, col]
- 
-    return output
 
+    direction = gradient_direction[1:-1, 1:-1]
+    direction = ((direction / tau + 1/16) % 1) * 8 // 1
+    
+    cc = gradient_magnitude[1:image_row-1, 1:image_col-1]
+    ll = (gradient_magnitude[1:image_row-1, 0:image_col-2] < cc).astype(int)
+    rr = (gradient_magnitude[1:image_row-1, 2:image_col-0] < cc).astype(int)
+    uu = (gradient_magnitude[0:image_row-2, 1:image_col-1] < cc).astype(int)
+    bb = (gradient_magnitude[2:image_row-0, 1:image_col-1] < cc).astype(int)
+    ul = (gradient_magnitude[0:image_row-2, 0:image_col-2] < cc).astype(int)
+    ur = (gradient_magnitude[0:image_row-2, 2:image_col-0] < cc).astype(int)
+    bl = (gradient_magnitude[2:image_row-0, 0:image_col-2] < cc).astype(int)
+    br = (gradient_magnitude[2:image_row-0, 2:image_col-0] < cc).astype(int)
+
+    output[1:-1, 1:-1] = (
+        np.logical_or(direction == 0, direction == 4) * (ll * rr) +
+        np.logical_or(direction == 1, direction == 5) * (bl * ur) +
+        np.logical_or(direction == 2, direction == 6) * (uu * bb) +
+        np.logical_or(direction == 3, direction == 7) * (ul * br)
+    )
+
+    return output * gradient_magnitude
+
+def double_threshold(img):
+    return np.digitize(img, bins=[0.04, 0.10])
 
 def show(img):
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
@@ -81,11 +67,11 @@ def show(img):
 
 def canny_edge(image):
     img = median_filter(image)
-    img = sobel(img)
     magnitude, direction = polar(gradient(img))
-    img = non_max_suppression(magnitude, direction, "verbose")
+    img = non_max_suppression(magnitude, direction)
+    img = double_threshold(img)
+    
     return img
-
 
 if __name__== "__main__":
     file_path = "TESTPIC.jpg"
