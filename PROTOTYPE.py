@@ -56,8 +56,6 @@ def non_max_suppression(gradient_magnitude, gradient_direction):
 
     return output * gradient_magnitude
 
-def double_threshold(img):
-    return np.digitize(img, bins=[0.04, 0.10])
 
 def show(img):
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
