@@ -1,4 +1,8 @@
+from ast import Try
+from logging import ERROR
+from tkinter import END
 import cv2
+from cv2 import Sobel
 import numpy as np
 import matplotlib.pyplot as plt
 import skimage
@@ -31,31 +35,52 @@ def polar(vector):
     return magnitude, direction
 
 def non_max_suppression(gradient_magnitude, gradient_direction):
-    image_row, image_col = gradient_magnitude.shape
+    pi = math.pi
+    width, height = gradient_magnitude.shape
+
+    gradient_direction = ((gradient_direction / (pi/8)) % 16)
+
     output = np.zeros(gradient_magnitude.shape)
 
-    direction = gradient_direction[1:-1, 1:-1]
-    direction = ((direction / tau + 1/16) % 1) * 8 // 1
-    
-    cc = gradient_magnitude[1:image_row-1, 1:image_col-1]
-    ll = (gradient_magnitude[1:image_row-1, 0:image_col-2] < cc).astype(int)
-    rr = (gradient_magnitude[1:image_row-1, 2:image_col-0] < cc).astype(int)
-    uu = (gradient_magnitude[0:image_row-2, 1:image_col-1] < cc).astype(int)
-    bb = (gradient_magnitude[2:image_row-0, 1:image_col-1] < cc).astype(int)
-    ul = (gradient_magnitude[0:image_row-2, 0:image_col-2] < cc).astype(int)
-    ur = (gradient_magnitude[0:image_row-2, 2:image_col-0] < cc).astype(int)
-    bl = (gradient_magnitude[2:image_row-0, 0:image_col-2] < cc).astype(int)
-    br = (gradient_magnitude[2:image_row-0, 2:image_col-0] < cc).astype(int)
+    for i_y in range(height):
+        for i_x in range(width):
+            try:
+                if (gradient_direction[i_x, i_y] >= 15) and (gradient_direction[i_x, i_y] < 1) or (gradient_direction[i_x, i_y] >= 7) and (gradient_direction[i_x, i_y] < 9):
+                    pixel1 = gradient_magnitude[i_x + 1, i_y]
+                    pixel2 = gradient_magnitude[i_x - 1, i_y]
 
-    output[1:-1, 1:-1] = (
-        np.logical_or(direction == 0, direction == 4) * (ll * rr) +
-        np.logical_or(direction == 1, direction == 5) * (bl * ur) +
-        np.logical_or(direction == 2, direction == 6) * (uu * bb) +
-        np.logical_or(direction == 3, direction == 7) * (ul * br)
-    )
+                elif (gradient_direction[i_x, i_y] >= 1) and (gradient_direction[i_x, i_y] < 3) or (gradient_direction[i_x, i_y] >= 9) and (gradient_direction[i_x, i_y] < 11):
+                    pixel1 = gradient_magnitude[i_x + 1, i_y + 1]
+                    pixel2 = gradient_magnitude[i_x - 1, i_y - 1]
 
-    return output * gradient_magnitude
+                elif (gradient_direction[i_x, i_y] >= 3) and (gradient_direction[i_x, i_y] < 5) or (gradient_direction[i_x, i_y] >= 11) and (gradient_direction[i_x, i_y] < 13):
+                    pixel1 = gradient_magnitude[i_x, i_y + 1]
+                    pixel2 = gradient_magnitude[i_x, i_y - 1]
 
+                else:
+                    pixel1 = gradient_magnitude[i_x - 1, i_y + 1]
+                    pixel2 = gradient_magnitude[i_x + 1, i_y - 1]
+
+                if (gradient_magnitude[i_x, i_y] > pixel1) and (gradient_magnitude[i_x, i_y] > pixel2):
+                    output[i_x, i_y] = gradient_magnitude[i_x, i_y]
+
+                else:
+                    output[i_x, i_y] = 0
+
+            except:
+                END
+
+    return output
+
+def double_threshold(img):
+    return np.digitize(img, bins=[0.04, 1])
+
+def hysteresis_thresholding(img) :
+    low_ratio = 0.01
+    high_ratio = 0.1
+    img = skimage.filters.apply_hysteresis_threshold(img, low_ratio, high_ratio)
+    img = np.where(img, 255, 0)
+    return img    
 
 def show(img):
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
@@ -68,12 +93,11 @@ def canny_edge(image):
     magnitude, direction = polar(gradient(img))
     img = non_max_suppression(magnitude, direction)
     img = double_threshold(img)
-    
+    img = hysteresis_thresholding(img)
     return img
 
 if __name__== "__main__":
-    file_path = "TESTPIC.jpg"
+    file_path = "bicycle.bmp"
     image = cv2.imread(file_path, 0)
     new_image = canny_edge(image)
-    show(image)
     show(new_image)
