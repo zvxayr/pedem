@@ -13,6 +13,11 @@ import skimage.filters as skif
 from skimage import io
 from math import atan2, pi, tau
 import math
+import pickle
+import functools
+from dotenv import dotenv_values
+
+config = dotenv_values('.env')
 
 
 def median_filter(image):
@@ -68,9 +73,22 @@ def non_max_suppression(gradient_magnitude, gradient_direction):
                     output[i_x, i_y] = 0
 
             except:
-                END
+                pass
 
     return output
+
+def use_model(filename):
+    def with_reg(fun):
+        with open(filename, 'rb') as f:
+            reg = pickle.load(f)
+
+        return functools.partial(fun, reg=reg)
+
+    return with_reg
+
+@use_model(config['model_file'])
+def px2cm(x, reg):
+    return reg.predict([[x]])[0]
 
 def double_threshold(img):
     return np.digitize(img, bins=[0.04, 1])
@@ -96,8 +114,24 @@ def canny_edge(image):
     img = hysteresis_thresholding(img)
     return img
 
+def get_foot_px(img):
+    contours, hierarchy = cv2.findContours(img, 1, 2)
+
+    foot_px = 0
+    for cnt in contours:
+        (x, y), (w, h), a = rect = cv2.minAreaRect(cnt)
+        foot_px = max(foot_px, w, h)
+    
+    return foot_px
+
 if __name__== "__main__":
-    file_path = "bicycle.bmp"
-    image = cv2.imread(file_path, 0)
-    new_image = canny_edge(image)
-    show(new_image)
+    # file_path = "TESTPIC.jpg"
+    # img = cv2.imread(file_path, 0)
+    # img = canny_edge(img).astype(np.uint8)
+
+    img = np.empty((100, 100)).astype(np.uint8)
+    img = cv2.circle(img, (50, 50), 25, (255, 255, 255), 1)
+    px = get_foot_px(img)
+    measurement = px2cm(px)
+
+    print(measurement)
