@@ -18,7 +18,7 @@ for sample_file in os.listdir(samples_folder):
         continue
 
     img = cv2.imread(f'{samples_folder}/{sample_file}', 0)
-    img = slice_image(img, left=100, right=100, top=20, bottom=20)
+    img = slice_image(img, **config.image_bounds)
     img = detect_edges(img)
     px = get_foot_px(img)
 
