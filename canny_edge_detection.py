@@ -26,13 +26,12 @@ def calculate_polar_coordinates(vector):
 
 
 def get_sub_images(magnitude):
-    sub_images = []
+    sub_images = [[None] * 3 for _ in range(3)]
     cols, rows = magnitude.shape
-    for dy in range(-1, 2):
-        sub_images.append([])
-        for dx in range(-1, 2):
-            sub_image = magnitude[1 + dy: cols - 1 + dy, 1 + dx: rows - 1 + dx]
-            sub_images[-1].append(sub_image)
+    for y in range(3):
+        for x in range(3):
+            sub_image = magnitude[y: cols - 2 + y, x: rows - 2 + x]
+            sub_images[y][x] = sub_image
 
     return sub_images
 
