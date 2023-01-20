@@ -25,4 +25,4 @@ for sample_file in os.listdir(samples_folder):
     data.append({"id": match.group("id"), "cm": match.group("cm"), "px": px})
 
 df = pd.DataFrame(data)
-df.to_csv(output_csv, index=False)
+df.to_csv(config.output_csv, index=False)

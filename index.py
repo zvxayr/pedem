@@ -10,6 +10,6 @@ if __name__ == "__main__":
     img = slice_image(img, **config.image_bounds)
     img = detect_edges(img)
     px = get_foot_px(img)
-    cm = px2cm(px)
+    cm = convert_px_to_cm(px)
 
     print(cm)
