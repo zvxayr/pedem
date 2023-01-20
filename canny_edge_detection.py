@@ -1,7 +1,6 @@
 import math
 from functools import partial, reduce
 
-import cv2
 import numpy as np
 import skimage.filters as skif
 from skimage.filters import median

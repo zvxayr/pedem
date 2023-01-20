@@ -2,7 +2,6 @@ import pickle
 from functools import lru_cache
 
 from cv2 import dilate, erode, findContours, minAreaRect
-from dotenv import dotenv_values
 from skimage.morphology import disk
 
 import config

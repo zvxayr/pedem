@@ -1,5 +1,4 @@
 import cv2
-from dotenv import dotenv_values
 
 import config
 from canny_edge_detection import detect_edges, slice_image
