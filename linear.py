@@ -1,22 +1,23 @@
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
+from pickle import dump
+
 import numpy as np
 import pandas as pd
-from pickle import dump
 from dotenv import dotenv_values
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 
-config = dotenv_values('.env')
+import config
 
-samples = pd.read_csv('FootSize.csv')
+data = pd.read_csv(config.output_csv)
 
-px = samples['Foot Size (px)'].values.reshape(-1, 1)
-cm = samples['Foot Size (cm)'].values
+px = data['px'].values.reshape(-1, 1)
+cm = data['cm'].values
 
 x_train, x_test, y_train, y_test = train_test_split(
     px, cm, test_size=0.2, random_state=21)
 
 reg = LinearRegression().fit(x_train, y_train)
-with open(config['model_file'], 'wb') as f:
+with open(config.model_file, 'wb') as f:
     dump(reg, f)
 
 print(f'     r2: {reg.score(x_test, y_test)}')

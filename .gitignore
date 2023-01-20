@@ -1,0 +1,6 @@
+output.csv
+model.pickle
+stats.prof
+
+__pycache__
+.vscode
