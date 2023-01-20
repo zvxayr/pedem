@@ -9,14 +9,12 @@ from skimage.morphology import disk
 
 def median_filter(image):
     img_median = median(image, disk(10), mode='constant', cval=0.0)
-
     return img_median
 
 
 def calculate_gradient(image):
     horizontal_gradient = skif.sobel_h(image)
     vertical_gradient = skif.sobel_v(image)
-
     return horizontal_gradient, vertical_gradient
 
 
@@ -24,33 +22,37 @@ def calculate_polar_coordinates(vector):
     x, y = vector
     magnitude = (x ** 2 + y ** 2) ** (1/2)
     direction = np.arctan2(y, x)
-
     return magnitude, direction
+
+
+def get_sub_images(magnitude):
+    sub_images = []
+    cols, rows = magnitude.shape
+    for dy in range(-1, 2):
+        sub_images.append([])
+        for dx in range(-1, 2):
+            sub_image = magnitude[1 + dy: cols - 1 + dy, 1 + dx: rows - 1 + dx]
+            sub_images[-1].append(sub_image)
+
+    return sub_images
+
+
+def discretize_angle(angle_vector):
+    return ((angle_vector / (2 * math.pi) + 1/16) % 1) * 8 // 1
 
 
 def non_max_suppression(polar_coordinates):
     magnitude, direction = polar_coordinates
-
-    slices = []
-    cols, rows = magnitude.shape
-    for dy in range(-1, 2):
-        slices.append([])
-        for dx in range(-1, 2):
-            slices[-1].append(magnitude[1 + dy: cols - 1 +
-                              dy, 1 + dx: rows - 1 + dx])
-
-    # Create an empty output mask
+    sub_images = get_sub_images(magnitude)
     mask = np.zeros_like(magnitude, dtype=bool)
+    discretized_angle = discretize_angle(direction[1:-1, 1:-1])
 
-    # Discretize the direction to 8 angles
-    direction = ((direction[1:-1, 1:-1] / (2 * math.pi) + 1/16) % 1) * 8 // 1
-
-    directions = [(0, 1), (0, 0), (1, 0), (0, 2)]
-    for i, (y, x) in enumerate(directions):
-        is_pixel1_brighter = slices[1][1] > slices[y][x]
-        is_pixel2_brighter = slices[1][1] > slices[2 - y][2 - x]
+    NORMAL_VECTORS = [(0, 1), (0, 0), (1, 0), (0, 2)]
+    for i, (y, x) in enumerate(NORMAL_VECTORS):
+        is_pixel1_brighter = sub_images[1][1] > sub_images[y][x]
+        is_pixel2_brighter = sub_images[1][1] > sub_images[2 - y][2 - x]
         is_retained = is_pixel1_brighter & is_pixel2_brighter
-        is_oriented = (direction == i) | (direction == i + 4)
+        is_oriented = (discretized_angle == i) | (discretized_angle == i + 4)
         mask[1:-1, 1:-1] |= is_oriented & is_retained
 
     return np.where(mask, magnitude, 0)
