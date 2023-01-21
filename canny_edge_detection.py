@@ -36,7 +36,7 @@ def get_sub_images(magnitude):
 
 
 def discretize_angle(angle_vector):
-    return ((angle_vector / (2 * np.pi) + 1/16) % 1) * 8 // 1
+    return (angle_vector * (4 / np.pi) + 0.5) % 8 // 1
 
 
 def non_max_suppression(polar_coordinates):
