@@ -2,12 +2,11 @@ from functools import partial, reduce
 
 import numpy as np
 import skimage.filters as skif
-from skimage.filters import median
 from skimage.morphology import disk
 
 
 def median_filter(image):
-    img_median = median(image, disk(10), mode='constant', cval=0.0)
+    img_median = skif.median(image, disk(10), mode='constant', cval=0.0)
     return img_median
 
 
@@ -24,12 +23,12 @@ def calculate_polar_coordinates(vector):
     return magnitude, direction
 
 
-def get_sub_images(magnitude):
+def get_sub_images(image):
     sub_images = [[None] * 3 for _ in range(3)]
-    cols, rows = magnitude.shape
+    cols, rows = image.shape
     for y in range(3):
         for x in range(3):
-            sub_image = magnitude[y: cols - 2 + y, x: rows - 2 + x]
+            sub_image = image[y: cols - 2 + y, x: rows - 2 + x]
             sub_images[y][x] = sub_image
 
     return sub_images
