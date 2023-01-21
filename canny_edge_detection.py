@@ -66,7 +66,7 @@ def apply_hysteresis_threshold(image):
 
 
 def compose(functions):
-    return partial(reduce, lambda processed_value, func: func(processed_value), functions)
+    return partial(reduce, lambda value, func: func(value), functions)
 
 
 def detect_edges(image):
