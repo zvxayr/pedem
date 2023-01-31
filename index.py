@@ -2,7 +2,7 @@ import cv2
 
 import config
 from canny_edge_detection import detect_edges, slice_image
-from foot_measurement import convert_px_to_cm, get_foot_px
+from foot_measurement import convert_px_to_cm, get_foot_dimensions_px
 
 
 def process_image(file_path, bounds):
@@ -13,7 +13,7 @@ def process_image(file_path, bounds):
 
 
 def get_foot_size(edge_img):
-    px = get_foot_px(edge_img)
+    px = get_foot_dimensions_px(edge_img)
     cm = convert_px_to_cm(px)
     return cm
 

@@ -16,18 +16,19 @@ def process_edge_image(edge_image, kernel):
 def find_largest_closed_boundary_side_px(edge_image):
     contours, _ = findContours(edge_image, 1, 2)
 
-    largest_side = 0
+    largest_rect = (0, 0)
     for contour in contours:
         (_, _), (w, h), _ = minAreaRect(contour)
-        largest_side = max(largest_side, w, h)
+        largest_rect = max(largest_rect, tuple(sorted((w, h), reverse=True)))
 
-    return largest_side
+    return largest_rect
 
 
-def get_foot_px(edge_image):
+def get_foot_dimensions_px(edge_image):
     processed_edge_image = process_edge_image(edge_image, disk(4))
-    foot_px = find_largest_closed_boundary_side_px(processed_edge_image)
-    return foot_px
+    foot_dimensions_px = find_largest_closed_boundary_side_px(
+        processed_edge_image)
+    return foot_dimensions_px
 
 
 @lru_cache
