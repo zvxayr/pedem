@@ -13,13 +13,13 @@ def process_image(file_path, bounds):
 
 
 def get_foot_size(edge_img):
-    px = get_foot_dimensions_px(edge_img)
-    cm = convert_px_to_cm(px)
+    foot_dimensions = get_foot_dimensions_px(edge_img)
+    cm = convert_px_to_cm(foot_dimensions)
     return cm
 
 
 if __name__ == "__main__":
-    file_path = "Samples/S02 24.5.jpg"
+    file_path = "Samples/S01 27.0.jpg"
     edge_img = process_image(file_path, config.image_bounds)
     cm = get_foot_size(edge_img)
 

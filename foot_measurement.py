@@ -21,14 +21,14 @@ def find_largest_closed_boundary_side_px(edge_image):
         (_, _), (w, h), _ = minAreaRect(contour)
         largest_rect = max(largest_rect, tuple(sorted((w, h), reverse=True)))
 
-    return largest_rect
+    return list(largest_rect)
 
 
 def get_foot_dimensions_px(edge_image):
     processed_edge_image = process_edge_image(edge_image, disk(4))
-    foot_dimensions_px = find_largest_closed_boundary_side_px(
+    foot_dimensions = find_largest_closed_boundary_side_px(
         processed_edge_image)
-    return foot_dimensions_px
+    return foot_dimensions
 
 
 @lru_cache
@@ -39,4 +39,4 @@ def load_model(model_source):
 
 def convert_px_to_cm(px, model_source=config.model_file):
     reg = load_model(model_source)
-    return reg.predict([[px]])[0]
+    return reg.predict([px[:1]])[0][0]
