@@ -1,12 +1,26 @@
 from functools import partial, reduce
 
+import cv2
 import numpy as np
 import skimage.filters as skif
+from scipy import signal
 from skimage.morphology import disk
+
+from utils import show
+
+
+def bilateral_filter(image):
+    return cv2.bilateralFilter(image, 4, 40, 40)
 
 
 def median_filter(image):
+    # img_median = ndimage.median_filter(
+    #     image, footprint=disk(10), mode='constant', cval=0.0)
     img_median = skif.median(image, disk(10), mode='constant', cval=0.0)
+    # img_median = signal.medfilt2d(image, kernel_size=21)
+
+    # show(img_median)
+
     return img_median
 
 
@@ -69,9 +83,9 @@ def compose(functions):
     return partial(reduce, lambda value, func: func(value), functions)
 
 
-def detect_edges(image):
+def detect_edges(image, low_pass_filter=median_filter):
     processing_steps = compose([
-        median_filter,
+        low_pass_filter,
         calculate_gradient,
         calculate_polar_coordinates,
         non_max_suppression,
@@ -79,6 +93,9 @@ def detect_edges(image):
         apply_hysteresis_threshold
     ])
     edge_image = processing_steps(image)
+
+    # show(edge_image)
+
     return edge_image.astype(np.uint8)
 
 

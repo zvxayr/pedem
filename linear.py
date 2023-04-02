@@ -2,7 +2,7 @@ from pickle import dump
 
 import numpy as np
 import pandas as pd
-from scipy.stats import ttest_1samp
+from scipy.stats import ttest_rel
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
@@ -24,4 +24,4 @@ print(f'     r2: {reg.score(x_test, y_test)}')
 print(f'      m: {reg.coef_[0]}')
 print(f'      b: {reg.intercept_}')
 
-print(ttest_1samp(np.abs(reg.predict(x_test) - y_test), 1))
+print(ttest_rel(reg.predict(x_test), y_test))

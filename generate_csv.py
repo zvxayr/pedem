@@ -5,7 +5,7 @@ import cv2
 import pandas as pd
 
 import config
-from canny_edge_detection import detect_edges, slice_image
+from canny_edge_detection import bilateral_filter, detect_edges, slice_image
 from foot_measurement import get_foot_dimensions_px
 
 samples_folder = 'Samples'
